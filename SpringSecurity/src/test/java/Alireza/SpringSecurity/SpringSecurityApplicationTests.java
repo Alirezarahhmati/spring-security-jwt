@@ -1,10 +1,10 @@
-package com.ArmanZamin.BazdidApp;
+package Alireza.SpringSecurity;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BazdidAppApplicationTests {
+class SpringSecurityApplicationTests {
 
 	@Test
 	void contextLoads() {

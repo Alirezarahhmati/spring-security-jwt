@@ -1,33 +1,41 @@
-package com.ArmanZamin.BazdidApp.config;
+package Alireza.SpringSecurity.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-@Component
-public class JwtUtils {
+@Service
+public class JwtService {
 
-    private String jwtSigningKey = "secret";
+    private static final String SECRET_KEY = "45935f7734baf15d98c3a209c331ac87389dcb57424061b9f4a10043042025766";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaim(token);
-        return claimsResolver.apply(claims);
+    private Claims extractAllClaims(String token) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(getSigninKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
-    private Claims extractAllClaim(String token) {
-        return Jwts.parser().setSigningKey(jwtSigningKey).parseClaimsJws(token).getBody();
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -40,12 +48,15 @@ public class JwtUtils {
     }
 
     private String createToken(Map<String, Object> claims, UserDetails userDetails){
-        return Jwts.builder().setClaims(claims)
+        return Jwts
+                .builder()
+                .setClaims(claims)
                 .setSubject(userDetails.getUsername())
                 .claim("authorities", userDetails.getAuthorities())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24)))
-                .signWith(SignatureAlgorithm.HS256, jwtSigningKey).compact();
+                .signWith(getSigninKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -61,8 +72,8 @@ public class JwtUtils {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    private boolean hasClaim (String token, String claimName) {
-        final Claims claims = extractAllClaim(token);
-        return claims.get(claimName) != null;
+    private Key getSigninKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

@@ -1,13 +1,13 @@
-package com.ArmanZamin.BazdidApp;
+package Alireza.SpringSecurity;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BazdidAppApplication {
+public class SpringSecurityApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BazdidAppApplication.class, args);
+		SpringApplication.run(SpringSecurityApplication.class, args);
 	}
 
 }
